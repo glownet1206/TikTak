@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Tic-Tac-Toe</title>
+    <style>
+        body {
+            background-color: #0e0e0e;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #fff;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        /* Keyframes for neon border effect */
+        @keyframes neonBorder {
+            0% {
+                border-color: #ff007f;
+                box-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f, 0 0 30px #ff007f;
+            }
+            14% {
+                border-color: #00ffcc;
+                box-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+            }
+            28% {
+                border-color: #ffcc00;
+                box-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00, 0 0 30px #ffcc00;
+            }
+            42% {
+                border-color: #7d00ff;
+                box-shadow: 0 0 10px #7d00ff, 0 0 20px #7d00ff, 0 0 30px #7d00ff;
+            }
+            57% {
+                border-color: #ff00ff;
+                box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+            }
+            71% {
+                border-color: #00ff99;
+                box-shadow: 0 0 10px #00ff99, 0 0 20px #00ff99, 0 0 30px #00ff99;
+            }
+            85% {
+                border-color: #00ffff;
+                box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+            }
+            100% {
+                border-color: #ff007f;
+                box-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f, 0 0 30px #ff007f;
+            }
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            padding: 20px;
+            border-radius: 15px;
+            border: 5px solid #fff; /* Default border color */
+            animation: neonBorder 3s infinite; /* Apply the animation */
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            font-weight: bold;
+            text-align: center;
+            color: transparent;
+            border: 2px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s ease-in-out;
+        }
+
+        .cell:hover {
+            background-color: #333;
+            box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .x {
+            color: #ff007f;
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.7), 0 0 20px rgba(255, 0, 127, 0.5);
+        }
+
+        .o {
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.7), 0 0 20px rgba(0, 255, 204, 0.5);
+        }
+
+        .game-message {
+            font-size: 20px;
+            color: #fff;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #ff007f;
+            color: #fff;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff3385;
+            box-shadow: 0 0 15px 5px rgba(255, 0, 127, 0.7);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-container {
+                grid-template-columns: repeat(3, 80px);
+                grid-template-rows: repeat(3, 80px);
+                gap: 5px;
+                padding: 15px;
+                margin: 0 auto;
+            }
+
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 30px;
+            }
+
+            .game-message {
+                font-size: 18px;
+                margin-top: 20px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" id="gameContainer">
+        <div class="cell" data-cell="0"></div>
+        <div class="cell" data-cell="1"></div>
+        <div class="cell" data-cell="2"></div>
+        <div class="cell" data-cell="3"></div>
+        <div class="cell" data-cell="4"></div>
+        <div class="cell" data-cell="5"></div>
+        <div class="cell" data-cell="6"></div>
+        <div class="cell" data-cell="7"></div>
+        <div class="cell" data-cell="8"></div>
+    </div>
+
+    <div class="game-message" id="gameMessage">Player X's turn</div>
+    <button onclick="resetGame()">Restart Game</button>
+
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const gameMessage = document.getElementById('gameMessage');
+        let currentPlayer = 'X';
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = true;
+
+        const winningCombinations = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        function checkWinner() {
+            for (let i = 0; i < winningCombinations.length; i++) {
+                const [a, b, c] = winningCombinations[i];
+                if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
+                    gameActive = false;
+                    gameMessage.textContent = `Player ${currentPlayer} wins!`;
+                    return;
+                }
+            }
+
+            if (!gameBoard.includes('')) {
+                gameActive = false;
+                gameMessage.textContent = 'It\'s a draw!';
+            }
+        }
+
+        function handleCellClick(event) {
+            const cell = event.target;
+            const cellIndex = cell.getAttribute('data-cell');
+
+            if (gameBoard[cellIndex] || !gameActive) return;
+
+            gameBoard[cellIndex] = currentPlayer;
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+            checkWinner();
+
+            if (gameActive) {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                gameMessage.textContent = `Player ${currentPlayer}'s turn`;
+            }
+        }
+
+        function resetGame() {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            gameMessage.textContent = `Player ${currentPlayer}'s turn`;
+
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o');
+            });
+        }
+
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+    </script>
+</body>
+</html>
